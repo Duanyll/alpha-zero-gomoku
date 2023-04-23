@@ -3,7 +3,7 @@ import os
 import sys
 sys.path.append('../build')
 
-from library import Gomoku, MCTS
+from libzerogomoku import Gomoku, MCTS
 import numpy as np
 import time
 

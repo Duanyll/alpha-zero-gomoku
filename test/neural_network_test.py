@@ -4,7 +4,7 @@ sys.path.append('../src')
 sys.path.append('../build')
 
 import torch
-from library import Gomoku
+from libzerogomoku import Gomoku
 import neural_network
 import numpy as np
 

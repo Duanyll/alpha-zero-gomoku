@@ -1,7 +1,7 @@
-#include <libtorch.h>
+#include <gomoku.h>
+#include <neural_network.h>
 
 #include <iostream>
-#include <gomoku.h>
 
 int main() {
   Gomoku gomoku(10, 5, 1);

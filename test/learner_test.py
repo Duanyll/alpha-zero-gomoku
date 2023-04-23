@@ -24,7 +24,7 @@ if __name__ == "__main__":
             human_first = False
         alpha_zero.play_with_human(human_first=human_first)
     elif sys.argv[1] == "test":
-        from library import MCTS, Gomoku, NeuralNetwork
+        from libzerogomoku import MCTS, Gomoku, NeuralNetwork
         cfg = config.config
         if len(sys.argv) < 3:
             print("[USAGE] python leaner_test.py test [num_contest]")

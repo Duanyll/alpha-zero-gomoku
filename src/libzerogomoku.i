@@ -1,8 +1,8 @@
-%module(threads="1") library
+%module(threads="1") libzerogomoku
 
 %{
 #include "gomoku.h"
-#include "libtorch.h"
+#include "neural_network.h"
 #include "mcts.h"
 %}
 

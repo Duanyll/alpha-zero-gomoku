@@ -1,5 +1,6 @@
 #include <iostream>
 #include <mcts.h>
+#include <neural_network.h>
 
 int main() {
   auto g = std::make_shared<Gomoku>(10, 5, 1);
@@ -13,8 +14,8 @@ int main() {
   g->execute_move(19);
   g->display();
 
-  MCTS m("../test/models/checkpoint.pt", 4, 3, 1000, 0.3, g->get_action_size(),
-         true);
+  NeuralNetwork nn("../test/models/checkpoint.pt", true, 1);
+  MCTS m(&nn, 4, 3, 1000, 0.3, g->get_action_size());
 
   std::cout << "RUNNING" << std::endl;
 

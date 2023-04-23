@@ -8,7 +8,7 @@
 
 #include <gomoku.h>
 #include <thread_pool.h>
-#include <libtorch.h>
+#include <neural_network.h>
 
 class TreeNode {
  public:

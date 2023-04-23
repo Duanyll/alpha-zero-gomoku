@@ -13,7 +13,7 @@ import sys
 sys.path.append('../build')
 # torch must be imported before the library to avoid dll conflict
 import torch 
-from library import MCTS, Gomoku, NeuralNetwork
+from libzerogomoku import MCTS, Gomoku, NeuralNetwork
 
 from neural_network import NeuralNetWorkWrapper
 from gomoku_gui import GomokuGUI
@@ -83,22 +83,22 @@ class Leaner():
             print("ITER :: {}".format(itr))
 
             # self play in parallel
-            libtorch = NeuralNetwork('./models/checkpoint.pt',
+            network = NeuralNetwork('./models/checkpoint.pt',
                                      self.libtorch_use_gpu, self.num_mcts_threads * self.num_train_threads)
             itr_examples = []
             with concurrent.futures.ThreadPoolExecutor(max_workers=self.num_train_threads) as executor:
-                futures = [executor.submit(self.self_play, 1 if itr % 2 else -1, libtorch, k == 1) for k in range(1, self.num_eps + 1)]
+                futures = [executor.submit(self.self_play, 1 if itr % 2 else -1, network, k == 1) for k in range(1, self.num_eps + 1)]
                 for k, f in enumerate(futures):
                     examples = f.result()
                     itr_examples += examples
 
                     # decrease libtorch batch size
                     remain = min(len(futures) - (k + 1), self.num_train_threads)
-                    libtorch.set_batch_size(max(remain * self.num_mcts_threads, 1))
+                    network.set_batch_size(max(remain * self.num_mcts_threads, 1))
                     print("EPS: {}, EXAMPLES: {}".format(k + 1, len(examples)))
 
             # release gpu memory
-            del libtorch
+            del network
 
             # prepare train data
             self.examples_buffer.append(itr_examples)
@@ -113,12 +113,12 @@ class Leaner():
 
             # compare performance
             if itr % self.check_freq == 0:
-                libtorch_current = NeuralNetwork('./models/checkpoint.pt',
+                nn_current = NeuralNetwork('./models/checkpoint.pt',
                                          self.libtorch_use_gpu, self.num_mcts_threads * self.num_train_threads // 2)
-                libtorch_best = NeuralNetwork('./models/best_checkpoint.pt',
+                nn_best = NeuralNetwork('./models/best_checkpoint.pt',
                                               self.libtorch_use_gpu, self.num_mcts_threads * self.num_train_threads // 2)
 
-                one_won, two_won, draws = self.contest(libtorch_current, libtorch_best, self.num_contest)
+                one_won, two_won, draws = self.contest(nn_current, nn_best, self.num_contest)
                 print("NEW/PREV WINS : %d / %d ; DRAWS : %d" % (one_won, two_won, draws))
 
                 if one_won + two_won > 0 and float(one_won) / (one_won + two_won) > self.update_threshold:
@@ -128,10 +128,10 @@ class Leaner():
                     print('REJECTING NEW MODEL')
 
                 # release gpu memory
-                del libtorch_current
-                del libtorch_best
+                del nn_current
+                del nn_best
 
-    def self_play(self, first_color, libtorch, show):
+    def self_play(self, first_color, network, show):
         """
         This function executes one episode of self-play, starting with player 1.
         As the game is played, each turn is added as a training example to
@@ -141,9 +141,9 @@ class Leaner():
         """
         train_examples = []
 
-        player1 = MCTS(libtorch, self.num_mcts_threads, self.c_puct,
+        player1 = MCTS(network, self.num_mcts_threads, self.c_puct,
                     self.num_mcts_sims, self.c_virtual_loss, self.action_size)
-        player2 = MCTS(libtorch, self.num_mcts_threads, self.c_puct,
+        player2 = MCTS(network, self.num_mcts_threads, self.c_puct,
             self.num_mcts_sims, self.c_virtual_loss, self.action_size)
         players = [player2, None, player1]
         player_index = 1
@@ -285,13 +285,13 @@ class Leaner():
                 l += [(newB, newPi.ravel(), np.argmax(newAction) if last_action != -1 else -1)]
         return l
 
-    def play_with_human(self, human_first=True, checkpoint_name="best_checkpoint"):
+    def play_with_human(self, human_first=True, checkpoint_path='./models/best_checkpoint.pt'):
         # gomoku gui
         t = threading.Thread(target=self.gomoku_gui.loop)
         t.start()
 
         # load best model
-        libtorch_best = NeuralNetwork('./models/best_checkpoint.pt', self.libtorch_use_gpu, 12)
+        libtorch_best = NeuralNetwork(checkpoint_path, self.libtorch_use_gpu, 12)
         mcts_best = MCTS(libtorch_best, self.num_mcts_threads * 3, \
              self.c_puct, self.num_mcts_sims * 6, self.c_virtual_loss, self.action_size)
 
