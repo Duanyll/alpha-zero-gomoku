@@ -3,7 +3,7 @@
 #include <numeric>
 #include <iostream>
 
-#include <mcts.h>
+#include "mcts.h"
 
 // TreeNode
 TreeNode::TreeNode()

@@ -6,9 +6,9 @@
 #include <thread>
 #include <atomic>
 
-#include <gomoku.h>
-#include <thread_pool.h>
-#include <neural_network.h>
+#include "gomoku.h"
+#include "thread_pool.h"
+#include "neural_network.h"
 
 class TreeNode {
  public:

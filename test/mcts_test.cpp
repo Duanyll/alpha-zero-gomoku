@@ -1,6 +1,6 @@
 #include <iostream>
-#include <mcts.h>
-#include <neural_network.h>
+#include "mcts.h"
+#include "neural_network.h"
 
 int main() {
   auto g = std::make_shared<Gomoku>(10, 5, 1);

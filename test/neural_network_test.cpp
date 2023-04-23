@@ -1,5 +1,5 @@
-#include <gomoku.h>
-#include <neural_network.h>
+#include "gomoku.h"
+#include "neural_network.h"
 
 #include <iostream>
 

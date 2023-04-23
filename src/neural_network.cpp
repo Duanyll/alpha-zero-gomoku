@@ -1,4 +1,4 @@
-#include <neural_network.h>
+#include "neural_network.h"
 
 #include <iostream>
 
@@ -35,10 +35,7 @@ std::future<NeuralNetwork::return_type> NeuralNetwork::commit(Gomoku* gomoku) {
 
     // convert data format
     auto board = gomoku->get_board();
-    std::vector<int> board0;
-    for (unsigned int i = 0; i < board.size(); i++) {
-        board0.insert(board0.end(), board[i].begin(), board[i].end());
-    }
+    std::vector<int> board0(board.begin(), board.end());
 
     torch::Tensor temp =
         torch::from_blob(&board0[0], {1, 1, n, n}, torch::dtype(torch::kInt32));

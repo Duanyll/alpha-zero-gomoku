@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include <gomoku.h>
+#include "gomoku.h"
 
 int main() {
   Gomoku gomoku(10, 5, 1);

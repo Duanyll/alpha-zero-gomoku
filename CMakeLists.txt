@@ -7,6 +7,7 @@ option(UNIT_TEST "unit test" OFF)
 
 set(CMAKE_CXX_STANDARD 14)
 
+# ----------------- pytorch -----------------
 if (NOT TORCH_CMAKE_PATH)
     # run python and read pytorch cmake path
     execute_process(COMMAND python -c "import torch; print(torch.utils.cmake_prefix_path)" OUTPUT_VARIABLE TORCH_CMAKE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -20,35 +21,47 @@ message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 if(MSVC)
     add_compile_options(/wd4624)
 endif()
-
 # find torch
 find_package(Torch REQUIRED)
 
+# ----------------- swig -----------------
 # find swig
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
 
+# ----------------- python -----------------
 # find python
 find_package(Python 3.6 REQUIRED)
 # run python and read python include path
 execute_process(COMMAND python -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())" OUTPUT_VARIABLE Python_INCLUDE_DIRS OUTPUT_STRIP_TRAILING_WHITESPACE)
 message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
 include_directories(${Python_INCLUDE_DIRS})
-
 # if PYTHON_LIBRARIES is defined, use it
 if(PYTHON_LIBRARIES)
     set(Python_LIBRARIES ${PYTHON_LIBRARIES})
 endif()
-
 # if Python_LIBRARIES is not found, warn user
 if(NOT Python_LIBRARIES)
     message(WARNING "Python_LIBRARIES not found, please set it manually")
 endif()
-
 message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES}")
+
+# ----------------- numpy -----------------
+# run python and get numpy include path
+execute_process(COMMAND python -c "import numpy; print(numpy.get_include())" OUTPUT_VARIABLE NUMPY_INCLUDE_DIRS OUTPUT_STRIP_TRAILING_WHITESPACE)
+message(STATUS "NUMPY_INCLUDE_DIRS: ${NUMPY_INCLUDE_DIRS}")
+include_directories(${NUMPY_INCLUDE_DIRS})
+# download numpy.i if not found
+if(EXISTS "lib/numpy.i")
+    message(STATUS "numpy.i found")
+else()
+    message(STATUS "numpy.i not found, downloading...")
+    file(DOWNLOAD https://raw.githubusercontent.com/numpy/numpy/master/tools/swig/numpy.i lib/numpy.i)
+endif()
 
 # add sources
 include_directories(./src)
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/lib")
 aux_source_directory(./src SOURCES)
 
 # swig

@@ -9,13 +9,10 @@ import neural_network
 import numpy as np
 
 
-def tuple_2d_to_numpy_2d(tuple_2d):
-    # help function
-    # convert type
-    res = [None] * len(tuple_2d)
-    for i, tuple_1d in enumerate(tuple_2d):
-        res[i] = list(tuple_1d)
-    return np.array(res)
+def get_board_numpy(gomoku, n):
+    res = np.zeros((n, n), dtype=np.int32)
+    gomoku.to_numpy(res)
+    return res
 
 
 if __name__ == "__main__":
@@ -89,12 +86,14 @@ if __name__ == "__main__":
     gomoku.execute_move(12)
     gomoku.execute_move(15)
 
-    feature_batch = [(tuple_2d_to_numpy_2d(gomoku.get_board()), gomoku.get_last_move(), gomoku.get_current_color())]
+    feature_batch = [(get_board_numpy(gomoku, n),
+                      gomoku.get_last_move(), gomoku.get_current_color())]
     print(feature_batch)
     print(nn.infer(feature_batch))
 
     gomoku.execute_move(24)
-    feature_batch = [(tuple_2d_to_numpy_2d(gomoku.get_board()), gomoku.get_last_move(), gomoku.get_current_color())]
+    feature_batch = [(get_board_numpy(gomoku, n),
+                      gomoku.get_last_move(), gomoku.get_current_color())]
     print(feature_batch)
     print(nn.infer(feature_batch))
 

@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include <gomoku.h>
+#include "gomoku.h"
 
 class NeuralNetwork {
  public:

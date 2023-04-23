@@ -18,13 +18,10 @@ from libzerogomoku import MCTS, Gomoku, NeuralNetwork
 from neural_network import NeuralNetWorkWrapper
 from gomoku_gui import GomokuGUI
 
-def tuple_2d_to_numpy_2d(tuple_2d):
-    # help function
-    # convert type
-    res = [None] * len(tuple_2d)
-    for i, tuple_1d in enumerate(tuple_2d):
-        res[i] = list(tuple_1d)
-    return np.array(res)
+def get_board_numpy(gomoku, n):
+    res = np.zeros((n, n), dtype=np.int32)
+    gomoku.to_numpy(res)
+    return res
 
 
 class Leaner():
@@ -165,7 +162,7 @@ class Leaner():
                 prob = np.array(list(player.get_action_probs(gomoku, 0)))
 
             # generate sample
-            board = tuple_2d_to_numpy_2d(gomoku.get_board())
+            board = get_board_numpy(gomoku, self.n)
             last_action = gomoku.get_last_move()
             cur_player = gomoku.get_current_color()
 

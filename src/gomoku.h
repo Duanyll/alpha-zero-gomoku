@@ -6,7 +6,7 @@
 class Gomoku {
 public:
   using move_type = int;
-  using board_type = std::vector<std::vector<int>>;
+  using board_type = std::vector<char>;
 
   Gomoku(unsigned int n, unsigned int n_in_row, int first_color);
 
@@ -22,6 +22,7 @@ public:
   void execute_move(move_type move);
   GameStatus get_game_status();
   void display() const;
+  void to_numpy(int dim1, int dim2, int* data) const;
 
   inline unsigned int get_action_size() const { return this->n * this->n; }
   inline board_type get_board() const { return this->board; }
@@ -34,6 +35,16 @@ private:
   unsigned int n;        // board size
   unsigned int n_in_row; // 5 in row or else
 
-  int cur_color;       // current player's color
-  move_type last_move; // last move
+  int cur_color;          // current player's color
+  move_type last_move;    // last move
+
+  int remain_moves;       // remaining moves
+
+  const int CACHE_SIZE = 8;
+  int move_cache[8];
+  int cache_index = 0;
+  GameStatus status_cache = GameStatus::NOT_END;
+
+  GameStatus get_status_incremental(move_type move);
+  GameStatus get_status_full();
 };
