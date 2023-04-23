@@ -108,7 +108,7 @@ class Leaner():
             random.shuffle(train_data)
 
             # train neural network
-            epochs = self.epochs * (len(itr_examples) + self.batch_size - 1) // self.batch_size
+            epochs = self.epochs
             loss, entropy = self.nnet.train(train_data, self.batch_size, int(epochs))
             if self.writer:
                 self.writer.add_scalar('train/loss', loss, itr)
