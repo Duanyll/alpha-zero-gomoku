@@ -40,11 +40,6 @@ private:
 
   int remain_moves;       // remaining moves
 
-  const int CACHE_SIZE = 8;
-  int move_cache[8];
-  int cache_index = 0;
   GameStatus status_cache = GameStatus::NOT_END;
-
   GameStatus get_status_incremental(move_type move);
-  GameStatus get_status_full();
 };

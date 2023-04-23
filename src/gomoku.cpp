@@ -41,31 +41,11 @@ void Gomoku::execute_move(move_type move) {
   this->cur_color = -this->cur_color;
   this->remain_moves--;
 
-  if (this->cache_index < CACHE_SIZE) {
-    this->move_cache[this->cache_index++] = move;
-  } else {
-    this->cache_index++;
-  }
+  this->status_cache = this->get_status_incremental(move);
 }
 
 Gomoku::GameStatus Gomoku::get_game_status() {
-  if (this->cache_index < CACHE_SIZE) {
-    for (int i = 0; i < this->cache_index; i++) {
-      this->status_cache = this->get_status_incremental(this->move_cache[i]);
-      if (this->status_cache != GameStatus::NOT_END) {
-        return this->status_cache;
-      }
-    }
-    if (this->remain_moves == 0) {
-      return GameStatus::DRAW;
-    } else {
-      return GameStatus::NOT_END;
-    }
-  } else {
-    this->cache_index = 0;
-    this->status_cache = this->get_status_full();
-    return this->status_cache;
-  }
+  return this->status_cache;
 }
 
 const static int dx[] = {0, 1, 1, 1, 0, -1, -1, -1};
@@ -80,7 +60,7 @@ Gomoku::GameStatus Gomoku::get_status_incremental(move_type move) {
   auto x = move / n;
   auto y = move % n;
 
-  int count[8] = {0};
+  int count[8] = {0};    
   for (int i = 0; i < 8; i++) {
     for (int j = 1; j < n_in_row; j++) {
       auto new_x = x + dx[i] * j;
@@ -100,65 +80,10 @@ Gomoku::GameStatus Gomoku::get_status_incremental(move_type move) {
       return (GameStatus)BOARD(x, y);
     }
   }
-  return GameStatus::NOT_END;
-}
-
-Gomoku::GameStatus Gomoku::get_status_full() {
-  auto n = this->n;
-  auto n_in_row = this->n_in_row;
-
-  for (unsigned int i = 0; i < n; i++) {
-    for (unsigned int j = 0; j < n; j++) {
-      if (BOARD(i, j) == 0) {
-        continue;
-      }
-
-      if (j <= n - n_in_row) {
-        auto sum = 0;
-        for (unsigned int k = 0; k < n_in_row; k++) {
-          sum += BOARD(i, j + k);
-        }
-        if (abs(sum) == n_in_row) {
-          return (GameStatus)BOARD(i, j);
-        }
-      }
-
-      if (i <= n - n_in_row) {
-        auto sum = 0;
-        for (unsigned int k = 0; k < n_in_row; k++) {
-          sum += BOARD(i + k, j);
-        }
-        if (abs(sum) == n_in_row) {
-          return (GameStatus)BOARD(i, j);
-        }
-      }
-
-      if (i <= n - n_in_row && j <= n - n_in_row) {
-        auto sum = 0;
-        for (unsigned int k = 0; k < n_in_row; k++) {
-          sum += BOARD(i + k, j + k);
-        }
-        if (abs(sum) == n_in_row) {
-          return (GameStatus)BOARD(i, j);
-        }
-      }
-
-      if (i <= n - n_in_row && j >= n_in_row - 1) {
-        auto sum = 0;
-        for (unsigned int k = 0; k < n_in_row; k++) {
-          sum += BOARD(i + k, j - k);
-        }
-        if (abs(sum) == n_in_row) {
-          return (GameStatus)BOARD(i, j);
-        }
-      }
-    }
-  }
-
-  if (this->has_legal_moves()) {
-    return GameStatus::NOT_END;
-  } else {
+  if (this->remain_moves == 0) {
     return GameStatus::DRAW;
+  } else {
+    return GameStatus::NOT_END;
   }
 }
 
