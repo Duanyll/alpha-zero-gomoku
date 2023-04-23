@@ -152,6 +152,8 @@ class NeuralNetWorkWrapper():
     def train(self, example_buffer, batch_size, epochs):
         """train neural network
         """
+        final_loss = 0
+        final_entropy = 0
         for epo in range(1, epochs + 1):
             self.neural_network.train()
 
@@ -184,6 +186,10 @@ class NeuralNetWorkWrapper():
             )
 
             print("EPOCH: {}, LOSS: {}, ENTROPY: {}".format(epo, loss.item(), entropy))
+            final_loss = loss.item()
+            final_entropy = entropy
+        return final_loss, final_entropy
+                
 
     def infer(self, feature_batch):
         """predict p and v by raw input

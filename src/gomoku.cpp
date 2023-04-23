@@ -1,7 +1,7 @@
-#include "gomoku.h"
 #include <cmath>
-
 #include <iostream>
+
+#include "gomoku.h"
 
 Gomoku::Gomoku(unsigned int n, unsigned int n_in_row, int first_color)
     : n(n),

@@ -45,6 +45,7 @@ if(NOT Python_LIBRARIES)
     message(WARNING "Python_LIBRARIES not found, please set it manually")
 endif()
 message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES}")
+add_compile_definitions(SWIG_PYTHON_INTERPRETER_NO_DEBUG)
 
 # ----------------- numpy -----------------
 # run python and get numpy include path

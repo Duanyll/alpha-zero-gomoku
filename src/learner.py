@@ -7,6 +7,7 @@ import numpy as np
 import pickle
 import concurrent.futures
 import random
+from torch.utils.tensorboard import SummaryWriter
 from functools import reduce
 
 import sys
@@ -59,6 +60,10 @@ class Leaner():
         self.epochs = config['epochs']
         self.nnet = NeuralNetWorkWrapper(config['lr'], config['l2'], config['num_layers'],
                                          config['num_channels'], config['n'], self.action_size, config['train_use_gpu'], self.libtorch_use_gpu)
+        
+        # tensorboard
+        if config['enable_tensorboard']:
+            self.writer = SummaryWriter(config['tensorboard_log_dir'])
 
     def learn(self):
         # start gui
@@ -104,7 +109,10 @@ class Leaner():
 
             # train neural network
             epochs = self.epochs * (len(itr_examples) + self.batch_size - 1) // self.batch_size
-            self.nnet.train(train_data, self.batch_size, int(epochs))
+            loss, entropy = self.nnet.train(train_data, self.batch_size, int(epochs))
+            if self.writer:
+                self.writer.add_scalar('train/loss', loss, itr)
+                self.writer.add_scalar('train/entropy', entropy, itr)
             self.nnet.save_model()
             self.save_samples()
 
@@ -118,7 +126,11 @@ class Leaner():
                 one_won, two_won, draws = self.contest(nn_current, nn_best, self.num_contest)
                 print("NEW/PREV WINS : %d / %d ; DRAWS : %d" % (one_won, two_won, draws))
 
-                if one_won + two_won > 0 and float(one_won) / (one_won + two_won) > self.update_threshold:
+                ratio = float(one_won) / (one_won + two_won) if one_won + two_won > 0 else 0
+                if self.writer:
+                    self.writer.add_scalar('contest/new_vs_old', one_won / two_won, itr)
+
+                if ratio > self.update_threshold:
                     print('ACCEPTING NEW MODEL')
                     self.nnet.save_model('models', "best_checkpoint")
                 else:

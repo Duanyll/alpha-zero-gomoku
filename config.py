@@ -33,7 +33,11 @@ config = {
     'examples_buffer_max_len': 20,              # max length of examples buffer
 
     # test
-    'human_color': 1                            # human player's color
+    'human_color': 1,                            # human player's color
+
+    # tensorboard
+    'enable_tensorboard': True,                 # enable tensorboard
+    'tensorboard_log_dir': './tensorboard',     # tensorboard log dir
 }
 
 # action size
