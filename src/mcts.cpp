@@ -261,7 +261,7 @@ void MCTS::simulate(std::shared_ptr<Gomoku> game) {
   double value = 0;
 
   // not end
-  if (status[0] == 0) {
+  if (status == Gomoku::GameStatus::NOT_END) {
     // predict action_probs and value by neural network
     std::vector<double> action_priors(this->action_size, 0);
 
@@ -306,7 +306,7 @@ void MCTS::simulate(std::shared_ptr<Gomoku> game) {
 
   } else {
     // end
-    auto winner = status[1];
+    auto winner = (status == Gomoku::GameStatus::DRAW ? 0 : (int)status);
     value = (winner == 0 ? 0 : (winner == game->get_current_color() ? 1 : -1));
   }
 

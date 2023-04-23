@@ -10,10 +10,17 @@ public:
 
   Gomoku(unsigned int n, unsigned int n_in_row, int first_color);
 
+  enum class GameStatus {
+    NOT_END = 0,
+    FIRST_WIN = 1,
+    SECOND_WIN = -1,
+    DRAW = 2,
+  };
+
   bool has_legal_moves();
   std::vector<int> get_legal_moves();
   void execute_move(move_type move);
-  std::vector<int> get_game_status();
+  GameStatus get_game_status();
   void display() const;
 
   inline unsigned int get_action_size() const { return this->n * this->n; }

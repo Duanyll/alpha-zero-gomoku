@@ -198,8 +198,9 @@ class Leaner():
             player_index = -player_index
 
             # is ended
-            ended, winner = gomoku.get_game_status()
-            if ended == 1:
+            status = gomoku.get_game_status()
+            if status != 0:
+                winner = 0 if status == 2 else status
                 # b, last_action, cur_player, p, v
                 return [(x[0], x[1], x[2], x[3], x[2] * winner) for x in train_examples]
 
@@ -252,8 +253,9 @@ class Leaner():
                 self.gomoku_gui.execute_move(player_index, best_move)
 
             # check game status
-            ended, winner = gomoku.get_game_status()
-            if ended == 1:
+            status = gomoku.get_game_status()
+            if status != 0:
+                winner = 0 if status == 2 else status
                 print("winner is {}".format(winner))
                 return winner
 
@@ -323,8 +325,9 @@ class Leaner():
             gomoku.execute_move(best_move)
 
             # check game status
-            ended, winner = gomoku.get_game_status()
-            if ended == 1:
+            status = gomoku.get_game_status()
+            if status != 0:
+                winner = 0 if status == 2 else status
                 break
 
             # update tree search

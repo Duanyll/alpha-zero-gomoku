@@ -50,7 +50,7 @@ void Gomoku::execute_move(move_type move) {
   this->cur_color = -this->cur_color;
 }
 
-std::vector<int> Gomoku::get_game_status() {
+Gomoku::GameStatus Gomoku::get_game_status() {
   // return (is ended, winner)
   auto n = this->n;
   auto n_in_row = this->n_in_row;
@@ -67,7 +67,7 @@ std::vector<int> Gomoku::get_game_status() {
           sum += this->board[i][j + k];
         }
         if (abs(sum) == n_in_row) {
-          return {1, this->board[i][j]};
+          return (GameStatus)this->board[i][j];
         }
       }
 
@@ -77,7 +77,7 @@ std::vector<int> Gomoku::get_game_status() {
           sum += this->board[i + k][j];
         }
         if (abs(sum) == n_in_row) {
-          return {1, this->board[i][j]};
+          return (GameStatus)this->board[i][j];
         }
       }
 
@@ -87,7 +87,7 @@ std::vector<int> Gomoku::get_game_status() {
           sum += this->board[i + k][j + k];
         }
         if (abs(sum) == n_in_row) {
-          return {1, this->board[i][j]};
+          return (GameStatus)this->board[i][j];
         }
       }
 
@@ -97,16 +97,16 @@ std::vector<int> Gomoku::get_game_status() {
           sum += this->board[i + k][j - k];
         }
         if (abs(sum) == n_in_row) {
-          return {1, this->board[i][j]};
+          return (GameStatus)this->board[i][j];
         }
       }
     }
   }
 
   if (this->has_legal_moves()) {
-    return {0, 0};
+    return GameStatus::NOT_END;
   } else {
-    return {1, 0};
+    return GameStatus::DRAW;
   }
 }
 
