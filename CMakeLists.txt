@@ -48,6 +48,18 @@ if(WRAP_LIB)
     set_property(SOURCE ./src/library.i PROPERTY CPLUSPLUS ON)
     swig_add_library(library TYPE SHARED LANGUAGE python SOURCES ./src/library.i ${SOURCES})
     swig_link_libraries(library ${Python_LIBRARIES} ${TORCH_LIBRARIES})
+
+    # The following code block is suggested to be used on Windows.
+    # According to https://github.com/pytorch/pytorch/issues/25457,
+    # the DLLs need to be copied to avoid memory errors.
+    # if (WIN32)
+    #     file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")
+    #     add_custom_command(TARGET _library
+    #                        POST_BUILD
+    #                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    #                        ${TORCH_DLLS}
+    #                        $<TARGET_FILE_DIR:_library>)
+    # endif (WIN32)
 endif()
 
 # unit test

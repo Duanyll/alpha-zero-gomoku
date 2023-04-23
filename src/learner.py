@@ -11,6 +11,8 @@ from functools import reduce
 
 import sys
 sys.path.append('../build')
+# torch must be imported before the library to avoid dll conflict
+import torch 
 from library import MCTS, Gomoku, NeuralNetwork
 
 from neural_network import NeuralNetWorkWrapper
@@ -252,6 +254,7 @@ class Leaner():
             # check game status
             ended, winner = gomoku.get_game_status()
             if ended == 1:
+                print("winner is {}".format(winner))
                 return winner
 
             # update search tree
