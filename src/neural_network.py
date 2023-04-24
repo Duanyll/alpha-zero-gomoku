@@ -8,7 +8,6 @@ import torch.nn as nn
 from torch.optim import AdamW
 from torch.autograd import Variable
 import torch.nn.functional as F
-from torch.utils.data import Dataset, RandomSampler, DataLoader
 
 import numpy as np
 
@@ -105,43 +104,6 @@ class NeuralNetWork(nn.Module):
         return p, v
 
 
-class GomokuDataset(Dataset):
-    """Gomoku Dataset
-    """
-    def __init__(self, example_buffer):
-        self.count = len(example_buffer)
-        board_batch, last_action_batch, cur_player_batch, p_batch, v_batch = list(
-            zip(*example_buffer))
-        n = board_batch[0].shape[0]
-        
-        board_batch = torch.Tensor(board_batch).unsqueeze(1)
-        state0 = (board_batch > 0).float()
-        state1 = (board_batch < 0).float()
-
-        state2 = torch.zeros((len(last_action_batch), 1, n, n)).float()
-
-        for i in range(len(board_batch)):
-            if cur_player_batch[i] == -1:
-                temp = state0[i].clone()
-                state0[i].copy_(state1[i])
-                state1[i].copy_(temp)
-
-            last_action = last_action_batch[i]
-            if last_action != -1:
-                x, y = last_action // self.n, last_action % self.n
-                state2[i][0][x][y] = 1
-
-        self.state = torch.cat((state0, state1, state2), dim=1)
-        self.p = torch.Tensor(p_batch)
-        self.v = torch.Tensor(v_batch).unsqueeze(1)
-
-    def __len__(self):
-        return self.count
-
-    def __getitem__(self, idx):
-        return self.state[idx], self.p[idx], self.v[idx]
-
-
 class AlphaLoss(nn.Module):
     """
     Custom loss as defined in the paper :
@@ -192,38 +154,40 @@ class NeuralNetWorkWrapper():
         """
         final_loss = 0
         final_entropy = 0
-        dataset = GomokuDataset(example_buffer)
-        dataloader = DataLoader(dataset, batch_size=batch_size, sampler=RandomSampler(dataset), num_workers=0)
-
         for epo in range(1, epochs + 1):
             self.neural_network.train()
-            for state_batch, p_batch, v_batch in dataloader:
-                if self.train_use_gpu:
-                    state_batch = state_batch.cuda()
-                    p_batch = p_batch.cuda()
-                    v_batch = v_batch.cuda()
 
-                # zero the parameter gradients
-                self.optim.zero_grad()
+            # sample
+            train_data = random.sample(example_buffer, batch_size)
 
-                # forward + backward + optimize
-                log_ps, vs = self.neural_network(state_batch)
-                loss = self.alpha_loss(log_ps, vs, p_batch, v_batch)
-                loss.backward()
+            # extract train data
+            board_batch, last_action_batch, cur_player_batch, p_batch, v_batch = list(zip(*train_data))
 
-                self.optim.step()
+            state_batch = self._data_convert(board_batch, last_action_batch, cur_player_batch)
+            p_batch = torch.Tensor(p_batch).cuda() if self.train_use_gpu else torch.Tensor(p_batch)
+            v_batch = torch.Tensor(v_batch).unsqueeze(
+                1).cuda() if self.train_use_gpu else torch.Tensor(v_batch).unsqueeze(1)
 
-                # calculate entropy
-                new_p, _ = self._infer(state_batch)
+            # zero the parameter gradients
+            self.optim.zero_grad()
 
-                entropy = -np.mean(
-                    np.sum(new_p * np.log(new_p + 1e-10), axis=1)
-                )
+            # forward + backward + optimize
+            log_ps, vs = self.neural_network(state_batch)
+            loss = self.alpha_loss(log_ps, vs, p_batch, v_batch)
+            loss.backward()
 
-                print("EPOCH: {}, LOSS: {}, ENTROPY: {}".format(epo, loss.item(), entropy))
-                final_loss = loss.item()
-                final_entropy = entropy
-        
+            self.optim.step()
+
+            # calculate entropy
+            new_p, _ = self._infer(state_batch)
+
+            entropy = -np.mean(
+                np.sum(new_p * np.log(new_p + 1e-10), axis=1)
+            )
+
+            print("EPOCH: {}, LOSS: {}, ENTROPY: {}".format(epo, loss.item(), entropy))
+            final_loss = loss.item()
+            final_entropy = entropy
         return final_loss, final_entropy
                 
 
