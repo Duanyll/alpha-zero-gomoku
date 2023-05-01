@@ -73,13 +73,15 @@ class Leaner():
             t.start()
 
         # train the model by self play
-        if path.exists(path.join('models', 'checkpoint.example')):
+        if path.exists(path.join('models', 'checkpoint.pt')):
             print("loading checkpoint...")
             self.nnet.load_model()
-            self.load_samples()
         else:
-            # save torchscript
             self.nnet.save_model()
+        if path.exists(path.join('models', 'checkpoint.example')):
+            self.load_samples()
+        if not path.exists(path.join('models', 'best_checkpoint.pt')):
+            # save torchscript
             self.nnet.save_model('models', "best_checkpoint")
 
         for itr in range(1, self.num_iters + 1):
