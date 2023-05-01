@@ -3,13 +3,14 @@
 
 #include "gomoku.h"
 
-Gomoku::Gomoku(unsigned int n, unsigned int n_in_row, int first_color)
+Gomoku::Gomoku(unsigned int n, unsigned int n_in_row, int first_color, bool allow_unusual_beginning)
     : n(n),
       n_in_row(n_in_row),
       cur_color(first_color),
       last_move(-1),
       remain_moves(n * n),
-      board(n * n, 0) {}
+      board(n * n, 0),
+      allow_unusual_beginning(allow_unusual_beginning) {}
 
 #define BOARD(i, j) this->board[(i)*n + (j)]
 
@@ -17,6 +18,33 @@ std::vector<int> Gomoku::get_legal_moves() {
   auto n = this->n;
   std::vector<int> legal_moves(this->get_action_size(), 0);
 
+  if (!allow_unusual_beginning) {
+    int moves = n * n - this->remain_moves;
+    if (moves == 0) {
+      legal_moves[n / 2 * n + n / 2] = 1;
+      return legal_moves;
+    } else if (moves == 1) {
+      // only allow center 3x3
+      for (unsigned int i = n / 2 - 1; i <= n / 2 + 1; i++) {
+        for (unsigned int j = n / 2 - 1; j <= n / 2 + 1; j++) {
+          if (BOARD(i, j) == 0) {
+            legal_moves[i * n + j] = 1;
+          }
+        }
+      }
+      return legal_moves;
+    } else if (moves == 2) {
+      // only allow center 5x5
+      for (unsigned int i = n / 2 - 2; i <= n / 2 + 2; i++) {
+        for (unsigned int j = n / 2 - 2; j <= n / 2 + 2; j++) {
+          if (BOARD(i, j) == 0) {
+            legal_moves[i * n + j] = 1;
+          }
+        }
+      }
+      return legal_moves;
+    }
+  } 
   for (unsigned int i = 0; i < n; i++) {
     for (unsigned int j = 0; j < n; j++) {
       if (BOARD(i, j) == 0) {

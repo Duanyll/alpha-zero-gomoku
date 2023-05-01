@@ -5,6 +5,7 @@ sys.path.append('../src')
 
 import learner
 import config
+import threading
 
 if __name__ == "__main__":
     if len(sys.argv) < 2 or sys.argv[1] not in ["train", "play", "test"]:
@@ -29,10 +30,12 @@ if __name__ == "__main__":
         if len(sys.argv) < 3:
             print("[USAGE] python leaner_test.py test [num_contest]")
             exit(1)
+        t = threading.Thread(target=alpha_zero.gomoku_gui.loop)
+        t.start()
         num_contest = int(sys.argv[2])
-        libtorch_a = NeuralNetwork('./models/checkpoint.pt',
+        libtorch_a = NeuralNetwork('./models/best_checkpoint.3500.pt',
                                    cfg['libtorch_use_gpu'], cfg['num_mcts_threads'] * cfg['num_mcts_threads'] // 2)
-        libtorch_b = NeuralNetwork('./models/best_checkpoint.pt',
+        libtorch_b = NeuralNetwork('./models/best_checkpoint.3500.pt',
                                    cfg['libtorch_use_gpu'], cfg['num_mcts_threads'] * cfg['num_mcts_threads'] // 2)
 
         one_won, two_won, draws = alpha_zero.contest(

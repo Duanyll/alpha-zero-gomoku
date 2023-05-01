@@ -8,7 +8,7 @@ public:
   using move_type = int;
   using board_type = std::vector<char>;
 
-  Gomoku(unsigned int n, unsigned int n_in_row, int first_color);
+  Gomoku(unsigned int n, unsigned int n_in_row, int first_color, bool allow_unusual_beginning = false);
 
   enum class GameStatus {
     NOT_END = 0,
@@ -34,6 +34,7 @@ private:
   board_type board;      // game borad
   unsigned int n;        // board size
   unsigned int n_in_row; // 5 in row or else
+  bool allow_unusual_beginning; // allow the first three moves to be anywhere
 
   int cur_color;          // current player's color
   move_type last_move;    // last move

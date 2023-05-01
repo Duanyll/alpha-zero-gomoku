@@ -38,6 +38,7 @@ class Leaner():
         # train
         self.num_iters = config['num_iters']
         self.num_eps = config['num_eps']
+        self.ratio_unusual = config['ratio_unusual']
         self.num_train_threads = config['num_train_threads']
         self.check_freq = config['check_freq']
         self.num_contest = config['num_contest']
@@ -89,7 +90,7 @@ class Leaner():
                                      self.libtorch_use_gpu, self.num_mcts_threads * self.num_train_threads)
             itr_examples = []
             with concurrent.futures.ThreadPoolExecutor(max_workers=self.num_train_threads) as executor:
-                futures = [executor.submit(self.self_play, 1 if itr % 2 else -1, network, k == 1) for k in range(1, self.num_eps + 1)]
+                futures = [executor.submit(self.self_play, 1 if itr % 2 else -1, network, k == 1, k <= self.num_eps * self.ratio_unusual) for k in range(1, self.num_eps + 1)]
                 for k, f in enumerate(futures):
                     examples = f.result()
                     itr_examples += examples
@@ -140,7 +141,7 @@ class Leaner():
                 del nn_current
                 del nn_best
 
-    def self_play(self, first_color, network, show):
+    def self_play(self, first_color, network, show, unusual):
         """
         This function executes one episode of self-play, starting with player 1.
         As the game is played, each turn is added as a training example to
@@ -157,7 +158,7 @@ class Leaner():
         players = [player2, None, player1]
         player_index = 1
 
-        gomoku = Gomoku(self.n, self.n_in_row, first_color)
+        gomoku = Gomoku(self.n, self.n_in_row, first_color, unusual)
 
         if show:
             self.gomoku_gui.reset_status()
@@ -222,7 +223,7 @@ class Leaner():
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.num_train_threads) as executor:
             futures = [executor.submit(\
-                self._contest, network1, network2, 1 if k <= num_contest // 2 else -1, k == 1) for k in range(1, num_contest + 1)]
+                self._contest, network1, network2, 1 if k % 2 == 1 else -1, k == num_contest, k <= num_contest * self.ratio_unusual) for k in range(1, num_contest + 1)]
             for f in futures:
                 winner = f.result()
                 if winner == 1:
@@ -234,7 +235,7 @@ class Leaner():
 
         return one_won, two_won, draws
 
-    def _contest(self, network1, network2, first_player, show):
+    def _contest(self, network1, network2, first_player, show, unusual):
         # create MCTS
         player1 = MCTS(network1, self.num_mcts_threads, self.c_puct,
             self.num_mcts_sims, self.c_virtual_loss, self.action_size)
@@ -244,7 +245,7 @@ class Leaner():
         # prepare
         players = [player2, None, player1]
         player_index = first_player
-        gomoku = Gomoku(self.n, self.n_in_row, first_player)
+        gomoku = Gomoku(self.n, self.n_in_row, first_player, unusual)
         if show:
             self.gomoku_gui.reset_status()
 
@@ -296,7 +297,7 @@ class Leaner():
                 l += [(newB, newPi.ravel(), np.argmax(newAction) if last_action != -1 else -1)]
         return l
 
-    def play_with_human(self, human_first=True, checkpoint_path='./models/best_checkpoint.pt'):
+    def play_with_human(self, human_first=True, checkpoint_path='./models/best_checkpoint.3500.pt'):
         # gomoku gui
         t = threading.Thread(target=self.gomoku_gui.loop)
         t.start()
